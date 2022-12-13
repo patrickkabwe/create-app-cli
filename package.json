@@ -7,11 +7,8 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "node src/index.js",
-    "prepublishOnly": "npm run format && npm run lint",
-    "preversion": "npm run lint",
-    "version": "git add -A src",
     "postversion": "git push && git push --tags",
-    "git:push": "git add -A && git commit -m 'add create dir' && git push"
+    "git:push": "git add -A && git commit -m 'new release' && git push"
   },
   "bin": {
     "@kazion/create-app": "bin/create-app",
