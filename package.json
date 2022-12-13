@@ -1,12 +1,17 @@
 {
   "name": "@kazion/create-app",
-  "version": "1.0.0",
+  "description": "A cli tool to help you get started with graphql and rest api's with typescript",
+  "version": "1.0.1",
   "main": "src/index.js",
   "license": "MIT",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "node src/index.js",
-    "build": "pkg . --out-path bin"
+    "prepublishOnly": "npm run format && npm run lint",
+    "preversion": "npm run lint",
+    "version": "git add -A src",
+    "postversion": "git push && git push --tags",
+    "git:push": "git add -A && git commit -m 'add create dir' && git push"
   },
   "bin": {
     "@kazion/create-app": "bin/create-app",
@@ -28,7 +33,7 @@
     "Rest API Starter Kit"
   ],
   "author": {
-    "name": "Patrick Kabwe",
+    "name": "Patrick",
     "email": "patrickckabwe@gmail.com",
     "url": "https://www.patrickkabwe.com"
   },
@@ -38,6 +43,12 @@
     "directory": "@kazion/create-app",
     "branch": "main"
   },
+  "maintainers": [
+    {
+      "name": "Patrick",
+      "email": "patrickckabwe@gmail.com"
+    }
+  ],
   "dependencies": {
     "arg": "^5.0.2",
     "chalk": "4.1.1",
