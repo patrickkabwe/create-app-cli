@@ -12,17 +12,6 @@ services:
     networks:
       - redis-net
 
-  redis-commander:
-    image: rediscommander/redis-commander:latest
-    container_name: redis-commander
-    restart: always
-    ports:
-      - 8081:8081
-    environment:
-      - REDIS_HOSTS=redis
-    networks:
-      - redis-net
-
 volumes:
   data:
   
