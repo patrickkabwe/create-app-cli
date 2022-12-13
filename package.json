@@ -20,6 +20,18 @@
     "src/",
     "template/"
   ],
+  "keywords": [
+    "graphql",
+    "graphql-starter",
+    "Rest API",
+    "Rest API Starter",
+    "Rest API Starter Kit"
+  ],
+  "author": {
+    "name": "Patrick Kabwe",
+    "email": "patrickckabwe@gmail.com",
+    "url": "https://www.patrickkabwe.com"
+  },
   "dependencies": {
     "arg": "^5.0.2",
     "chalk": "4.1.1",
