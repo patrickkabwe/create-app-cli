@@ -18,7 +18,7 @@
   "files": [
     "bin/",
     "src/",
-    "template/"
+    "templates/"
   ],
   "keywords": [
     "graphql",
