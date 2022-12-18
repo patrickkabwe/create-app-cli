@@ -18,7 +18,7 @@ export const authTypeDefs = `#graphql
   type Mutation {
     registerUser(input: UserPayload!): Ok
     loginUser(input: UserLoginInput): User
-    verifyToken(input: VerifyTokenInput!): User
+    verifyToken(input: VerifyTokenInput): User
     logout: Ok
   }
 `;

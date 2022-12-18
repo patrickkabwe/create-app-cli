@@ -1,10 +1,6 @@
 import { User } from '@prisma/client';
-import {
-  PrismaClientKnownRequestError,
-  PrismaClientValidationError,
-} from '@prisma/client/runtime';
 import { ZodError } from 'zod';
-import { BadRequest, ServerError, UNAUTHENTICATED } from '~/errors';
+import { BadRequest, ServerError, UnAuthenticated } from '~/errors';
 import { ERROR_MESSAGES } from '~/errors/errorMessages';
 import { ResolverHandler, Args, OK } from '~/types';
 import { UserService } from '~/modules/users/user.service';
@@ -59,32 +55,27 @@ export const loginHandler: ResolverHandler<Promise<User>> = async (
       cleanedData.phoneNumber,
     );
 
-    if (!(await comparePassword(args.input.password, user.password))) {
-      throw new UNAUTHENTICATED(ERROR_MESSAGES.UNAUTHENTICATED);
+    if (!(await comparePassword(args.input.password, user!.password))) {
+      throw new UnAuthenticated(ERROR_MESSAGES.UNAUTHENTICATED);
     }
-    const token = await createToken(user.id);
-    user.lastLogin = new Date();
-    user.token = token;
-    await UserService.updateUserToken(cxt.prisma, user.id, user);
-    cxt.user = user;
-    return { ...user, token };
+
+    const token = await createToken(user!.id);
+    const updatedUser = await UserService.updateUserToken(
+      cxt.prisma,
+      user!.id,
+      {
+        lastLogin: new Date(),
+        token,
+      },
+    );
+
+    // cxt.user = user;
+    return { ...updatedUser };
   } catch (error: any) {
     if (error instanceof ZodError) {
       let message = formatZodError(error);
       throw new Error(message);
     }
-    if (error instanceof PrismaClientValidationError) {
-      throw new Error(error as any);
-    }
-    if (error instanceof PrismaClientKnownRequestError) {
-      if (error.code === 'P2002') {
-        throw new UNAUTHENTICATED(ERROR_MESSAGES.UNAUTHENTICATED);
-      }
-    }
-    if (error.message === 'No User found') {
-      throw new UNAUTHENTICATED(ERROR_MESSAGES.UNAUTHENTICATED);
-    }
-
     throw error;
   }
 };
@@ -94,22 +85,18 @@ export const verifyTokenHandler: ResolverHandler<Promise<User>> = async (
   _args,
   { req, prisma },
 ) => {
-  const authHeader = req.headers.authorization;
+  const authHeader = req?.cookies?.token;
   const inputToken = _args.input.token;
 
   try {
     if (!inputToken && !authHeader) {
-      throw new UNAUTHENTICATED(ERROR_MESSAGES.UNAUTHENTICATED);
+      throw new UnAuthenticated(ERROR_MESSAGES.UNAUTHENTICATED);
     }
-    const token = authHeader?.split(' ')[1];
-    if (!token && !inputToken) {
-      throw new UNAUTHENTICATED(ERROR_MESSAGES.UNAUTHENTICATED);
-    }
-    const { uid } = await verifyToken(token || inputToken);
+    const { uid } = await verifyToken(authHeader || inputToken);
     const user = await UserService.getUserById(prisma, uid);
     return user;
   } catch (error: any) {
-    throw new UNAUTHENTICATED(error.message);
+    throw new UnAuthenticated(error.message);
   }
 };
 
@@ -119,19 +106,22 @@ export const logoutHandler: ResolverHandler<Promise<OK>> = async (
   ctx,
 ) => {
   try {
-    const authHeader = ctx.req.headers.authorization;
+    const authHeader = ctx?.req?.cookies?.token;
+
     if (authHeader) {
-      const token = authHeader.split(' ')[1];
-      if (token) {
-        const { uid } = decodeToken(token);
+      if (authHeader) {
+        const { uid } = decodeToken(authHeader);
         const user = await UserService.getUserById(ctx.prisma, uid);
         user.token = null;
         await UserService.updateUserToken(ctx.prisma, user.id, user);
       }
+      ctx.user = null;
+      return { ok: true };
+    } else {
+      throw new UnAuthenticated(ERROR_MESSAGES.UNAUTHENTICATED);
     }
-    ctx.user = null;
-    return { ok: true };
   } catch (error) {
+    ctx.user = null;
     return { ok: false };
   }
 };

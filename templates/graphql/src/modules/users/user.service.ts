@@ -34,7 +34,11 @@ export class UserService {
     return updatedUser;
   }
 
-  static async updateUserToken(prisma: PrismaClient, id: string, user: User) {
+  static async updateUserToken(
+    prisma: PrismaClient,
+    id: string,
+    user: Partial<User>,
+  ) {
     const updatedUser = await prisma.user.update({
       where: {
         id,
@@ -48,7 +52,7 @@ export class UserService {
   }
 
   static async getUserByPhone(prisma: PrismaClient, phoneNumber: string) {
-    const user = await prisma.user.findFirstOrThrow({
+    const user = await prisma.user.findUnique({
       where: {
         phoneNumber,
       },
@@ -57,7 +61,7 @@ export class UserService {
   }
 
   static async getUserById(prisma: PrismaClient, id: string): Promise<User> {
-    const user = await prisma.user.findFirstOrThrow({
+    const user = await prisma.user.findUnique({
       where: {
         id,
       },

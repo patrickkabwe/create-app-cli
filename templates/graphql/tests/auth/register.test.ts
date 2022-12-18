@@ -46,7 +46,7 @@ describe('register', () => {
     // @ts-ignore
     delete mockUserPayload.id;
 
-    mockCtx.prisma.user.findFirstOrThrow.mockResolvedValueOnce(
+    mockCtx.prisma.user.findUnique.mockResolvedValueOnce(
       mockUserPayload as User,
     );
 

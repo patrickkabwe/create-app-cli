@@ -32,7 +32,18 @@ export interface OK {
 
 // generic response types
 
-// success register user response
 export interface RegisterUserResponse {
   registerUser: OK;
+}
+export interface LoginUserResponse {
+  loginUser: User;
+}
+export interface VerifyToken {
+  verifyToken: User;
+}
+export interface Logout {
+  logout: OK;
+}
+export interface UserResponse {
+  me: User;
 }

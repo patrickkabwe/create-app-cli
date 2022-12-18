@@ -11,7 +11,7 @@ const GraphQLErrorMessage = {
   ...ErrorMessage,
 };
 
-class UNAUTHENTICATED extends GraphQLError {
+class UnAuthenticated extends GraphQLError {
   constructor(message: string) {
     super(message);
     this.name = GraphQLErrorMessage.UNAUTHENTICATED;
@@ -21,7 +21,7 @@ class UNAUTHENTICATED extends GraphQLError {
   }
 }
 
-class UNAUTHORIZED extends GraphQLError {
+class UnAuthorized extends GraphQLError {
   constructor(message: string) {
     super(message);
     this.name = 'UNAUTHORIZED';
@@ -84,8 +84,8 @@ class INVALID_CREDENTIALS extends GraphQLError {
 }
 
 export {
-  UNAUTHENTICATED,
-  UNAUTHORIZED,
+  UnAuthenticated,
+  UnAuthorized,
   FORBIDDEN,
   NotFound,
   ServerError,

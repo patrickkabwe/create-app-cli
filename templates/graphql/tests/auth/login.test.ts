@@ -1,5 +1,5 @@
-import { expect, it, describe, beforeEach, afterEach, vitest } from 'vitest';
-import { RegisterUserResponse } from '~/types';
+import { expect, it, describe, beforeEach, afterEach, vi } from 'vitest';
+import { LoginUserResponse } from '~/types';
 import { testServer } from '~/utils/testServer';
 import {
   MockContext,
@@ -20,10 +20,11 @@ beforeEach(() => {
 });
 
 afterEach(() => {
-  vitest.clearAllMocks();
+  vi.clearAllMocks();
 });
 
 describe('login', () => {
+  let newUser: User;
   const mockUserPayload = {
     id: uuidV4(),
     name: 'test',
@@ -45,12 +46,10 @@ describe('login', () => {
   `;
 
   it('should fail if no phone and password', async () => {
-    mockCtx.prisma.user.findFirstOrThrow.mockResolvedValue(
-      mockUserPayload as User,
-    );
+    mockCtx.prisma.user.findUnique.mockResolvedValue(mockUserPayload as User);
     const { mutate } = await testServer();
 
-    const { body } = await mutate<RegisterUserResponse>(
+    const { body } = await mutate<LoginUserResponse>(
       q,
       { input: {} },
       { prisma: mockCtx.prisma },
@@ -62,20 +61,19 @@ describe('login', () => {
   });
 
   it('should fail if password dont match', async () => {
-    mockCtx.prisma.user.create.mockResolvedValue(mockUserPayload as User);
     const hashedPassword = await hashPassword(mockUserPayload.password);
-    const newUser = await UserService.createUser(mockCtx.prisma, {
+    const returnValue = {
       ...mockUserPayload,
       password: hashedPassword,
-    });
-    mockCtx.prisma.user.findFirstOrThrow.mockResolvedValue({
-      ...mockUserPayload,
-      password: hashedPassword,
-    } as User);
+    };
+    mockCtx.prisma.user.create.mockResolvedValue(returnValue as User);
+    mockCtx.prisma.user.findUnique.mockResolvedValue(returnValue as User);
+
+    newUser = await UserService.createUser(mockCtx.prisma, returnValue);
 
     const { mutate } = await testServer();
 
-    const { body } = await mutate<RegisterUserResponse>(
+    const { body } = await mutate<LoginUserResponse>(
       q,
       {
         input: {
@@ -89,5 +87,34 @@ describe('login', () => {
     const results = body.singleResult;
     expect(results.errors).toBeDefined();
     expect(results.errors[0].message).toBe('You are not authenticated');
+  });
+
+  it('should login user', async () => {
+    mockCtx.prisma.user.update.mockResolvedValue({ ...newUser, token: 'test' });
+    mockCtx.prisma.user.findUnique.mockResolvedValue(newUser);
+
+    const updatedUser = await UserService.updateUserToken(
+      mockCtx.prisma,
+      newUser.id,
+      {
+        token: 'test',
+      },
+    );
+    const { mutate } = await testServer();
+
+    const { body } = await mutate<LoginUserResponse>(
+      q,
+      {
+        input: { phoneNumber: newUser.phoneNumber, password: 'test10' },
+      },
+      { prisma: mockCtx.prisma },
+    );
+    const results = body.singleResult;
+    expect(results.data.loginUser).toEqual({
+      id: updatedUser.id,
+      name: updatedUser.name,
+      email: updatedUser.email,
+      phoneNumber: updatedUser.phoneNumber,
+    });
   });
 });

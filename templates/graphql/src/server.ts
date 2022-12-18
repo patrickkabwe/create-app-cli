@@ -1,5 +1,6 @@
 import { config } from 'dotenv';
 config();
+import cookieParser from 'cookie-parser';
 import express, { Request, Response } from 'express';
 import http from 'http';
 import cors from 'cors';
@@ -86,6 +87,7 @@ async function startApolloServer() {
   await server.start();
   app.use(
     '/graphql',
+    cookieParser(),
     cors<cors.CorsRequest>({
       origin: '*',
       methods: ['GET', 'POST', 'OPTIONS'],

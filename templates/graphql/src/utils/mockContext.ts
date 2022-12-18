@@ -1,4 +1,4 @@
-import { PrismaClient } from '@prisma/client';
+import { PrismaClient, User } from '@prisma/client';
 import { BaseContext } from '@apollo/server';
 import { Request, Response } from 'express';
 
@@ -12,10 +12,16 @@ export interface MockedContext extends BaseContext {
 
 export type MockContext = {
   prisma: DeepMockProxy<PrismaClient>;
+  req?: DeepMockProxy<Request>;
+  res?: Response;
+  user: User | null;
 };
 
 export const createMockContext = (): MockContext => {
   return {
     prisma: mockDeep<PrismaClient>(),
+    req: mockDeep<Request>(),
+    res: mockDeep<Response>(),
+    user: mockDeep<User>(),
   };
 };
