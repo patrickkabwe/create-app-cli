@@ -29,3 +29,10 @@ export type ResolverHandler<ReturnType = any> = (
 export interface OK {
   ok: boolean;
 }
+
+// generic response types
+
+// success register user response
+export interface RegisterUserResponse {
+  registerUser: OK;
+}

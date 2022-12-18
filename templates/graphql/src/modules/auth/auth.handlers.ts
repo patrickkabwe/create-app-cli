@@ -4,7 +4,7 @@ import {
   PrismaClientValidationError,
 } from '@prisma/client/runtime';
 import { ZodError } from 'zod';
-import { UNAUTHENTICATED } from '~/errors';
+import { BadRequest, ServerError, UNAUTHENTICATED } from '~/errors';
 import { ERROR_MESSAGES } from '~/errors/errorMessages';
 import { ResolverHandler, Args, OK } from '~/types';
 import { UserService } from '~/modules/users/user.service';
@@ -25,24 +25,25 @@ export const registerUserHandler: ResolverHandler<Promise<OK>> = async (
   { prisma },
 ) => {
   try {
-    await UserSchema.parseAsync(args.input);
+    const cleanedData = await UserSchema.parseAsync(args.input);
+
+    const foundUser = await UserService.getUserByPhone(
+      prisma,
+      cleanedData.phoneNumber,
+    );
+
+    if (foundUser) {
+      throw new BadRequest('Account already exists');
+    }
     args.input.password = await hashPassword(args.input.password);
     await UserService.createUser(prisma, args.input);
     return { ok: true };
   } catch (error: any) {
-    if (error instanceof PrismaClientValidationError) {
-      throw new Error(error as any);
-    }
-    if (error instanceof PrismaClientKnownRequestError) {
-      if (error.code === 'P2002') {
-        throw new Error('User already exists');
-      }
-    }
     if (error instanceof ZodError) {
       let message = formatZodError(error);
-      throw new Error(message);
+      throw new BadRequest(message);
     }
-    throw error;
+    throw new ServerError(error.message);
   }
 };
 
@@ -52,21 +53,21 @@ export const loginHandler: ResolverHandler<Promise<User>> = async (
   cxt,
 ) => {
   try {
-    await UserLoginSchema.parseAsync(args.input);
+    const cleanedData = await UserLoginSchema.parseAsync(args.input);
     const user = await UserService.getUserByPhone(
       cxt.prisma,
-      args.input.phoneNumber,
+      cleanedData.phoneNumber,
     );
 
-    if (await comparePassword(args.input.password, user.password)) {
-      const token = await createToken(user.id);
-      user.lastLogin = new Date();
-      user.token = token;
-      await UserService.updateUserToken(cxt.prisma, user.id, user);
-      cxt.user = user;
-      return { ...user, token };
+    if (!(await comparePassword(args.input.password, user.password))) {
+      throw new UNAUTHENTICATED(ERROR_MESSAGES.UNAUTHENTICATED);
     }
-    throw new UNAUTHENTICATED(ERROR_MESSAGES.UNAUTHENTICATED);
+    const token = await createToken(user.id);
+    user.lastLogin = new Date();
+    user.token = token;
+    await UserService.updateUserToken(cxt.prisma, user.id, user);
+    cxt.user = user;
+    return { ...user, token };
   } catch (error: any) {
     if (error instanceof ZodError) {
       let message = formatZodError(error);

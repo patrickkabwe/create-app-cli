@@ -3,8 +3,8 @@
 export const authTypeDefs = `#graphql
 
   input UserLoginInput {
-    phoneNumber: String!
-    password: String!
+    phoneNumber: String
+    password: String
   }
 
   type Token {
@@ -17,7 +17,7 @@ export const authTypeDefs = `#graphql
 
   type Mutation {
     registerUser(input: UserPayload!): Ok
-    loginUser(input: UserLoginInput!): User
+    loginUser(input: UserLoginInput): User
     verifyToken(input: VerifyTokenInput!): User
     logout: Ok
   }

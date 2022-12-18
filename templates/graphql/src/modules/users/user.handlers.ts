@@ -38,7 +38,6 @@ export const inviteUserHandler: ResolverHandler<Promise<OK>> = async (
   args: Partial<Args<User, ID>>,
 ) => {
   try {
-    console.log(args);
     pubsub.publish('USER_INVITE', { userInvite: args.input });
     return { ok: true };
   } catch (error) {

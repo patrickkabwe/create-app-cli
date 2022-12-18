@@ -1,15 +1,25 @@
-import * as jose from 'jose'
+import { generateKeyPairSync } from 'crypto';
+import * as jose from 'jose';
 
-const generateKeys = async () => {
-    const { privateKey } = await jose.generateKeyPair(
-        process.env.ALGO as string
-    )
-    const pkcs8Pem = await jose.exportPKCS8(privateKey)
+const generateSecretKey = async () => {
+  const { privateKey } = generateKeyPairSync('rsa', {
+    modulusLength: 4096, // the length of your key in bits
+    publicKeyEncoding: {
+      type: 'spki',
+      format: 'pem',
+    },
+    privateKeyEncoding: {
+      type: 'pkcs8',
+      format: 'pem',
+    },
+  });
 
-    console.log(pkcs8Pem)
-}
+  const ecPrivateKey = await jose.importPKCS8(
+    privateKey,
+    process.env.ALGO as string,
+  );
 
-generateKeys()
+  console.log(ecPrivateKey);
+};
 
-
-
+generateSecretKey();

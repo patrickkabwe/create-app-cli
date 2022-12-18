@@ -14,6 +14,7 @@ import { verifyToken } from '~/utils/tokens';
 import { prisma } from '~/lib/db.server';
 import { WebSocketServer } from 'ws';
 import { useServer } from 'graphql-ws/lib/use/ws';
+import { logger } from '~/utils/logger';
 
 interface MyContext {
   token?: String;
@@ -98,7 +99,7 @@ async function startApolloServer() {
   await new Promise<void>((resolve) =>
     httpServer.listen({ port: 4000 }, resolve),
   );
-  console.log(`🚀 Server ready at http://localhost:4000/graphql`);
+  logger.info(`🚀 Server ready at http://localhost:4000/graphql`);
 }
 
 startApolloServer();

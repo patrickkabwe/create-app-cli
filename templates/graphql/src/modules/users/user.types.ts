@@ -3,6 +3,7 @@ export const userTypeDefs = `#graphql
   type User {
     id: String
     name: String!
+    email: String
     phoneNumber: String!
     token: String
     dateJoined: String
@@ -10,6 +11,7 @@ export const userTypeDefs = `#graphql
   }
   input UserPayload {
     name: String
+    email: String
     phoneNumber: String
     password: String
     avatar: String

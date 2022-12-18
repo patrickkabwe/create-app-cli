@@ -1,60 +1,82 @@
-class UNAUTHENTICATED extends Error {
+// @ts-nocheck
+import { GraphQLError } from 'graphql';
+import { ApolloServerErrorCode } from '@apollo/server/errors';
+
+enum ErrorMessage {
+  UNAUTHENTICATED = 'UNAUTHENTICATED',
+}
+
+const GraphQLErrorMessage = {
+  ...ApolloServerErrorCode,
+  ...ErrorMessage,
+};
+
+class UNAUTHENTICATED extends GraphQLError {
   constructor(message: string) {
     super(message);
-    this.name = 'UNAUTHENTICATED';
+    this.name = GraphQLErrorMessage.UNAUTHENTICATED;
+    this.extensions = {
+      code: GraphQLErrorMessage.UNAUTHENTICATED,
+    };
   }
 }
 
-class UNAUTHORIZED extends Error {
+class UNAUTHORIZED extends GraphQLError {
   constructor(message: string) {
     super(message);
     this.name = 'UNAUTHORIZED';
   }
 }
 
-class FORBIDDEN extends Error {
+class FORBIDDEN extends GraphQLError {
   constructor(message: string) {
     super(message);
     this.name = 'FORBIDDEN';
   }
 }
 
-class NOT_FOUND extends Error {
+class NotFound extends GraphQLError {
   constructor(message: string) {
     super(message);
     this.name = 'NOT_FOUND';
   }
 }
 
-class INTERNAL_SERVER_ERROR extends Error {
+class ServerError extends GraphQLError {
   constructor(message: string) {
     super(message);
-    this.name = 'INTERNAL_SERVER_ERROR';
+    this.name = GraphQLErrorMessage.INTERNAL_SERVER_ERROR;
+    this.extensions = {
+      code: GraphQLErrorMessage.INTERNAL_SERVER_ERROR,
+    };
   }
 }
 
-class BAD_REQUEST extends Error {
+class BadRequest extends GraphQLError {
   constructor(message: string) {
     super(message);
-    this.name = 'BAD_REQUEST';
+    this.name = GraphQLErrorMessage.BAD_REQUEST;
+    this.extensions = {
+      code: GraphQLErrorMessage.BAD_REQUEST,
+    };
   }
 }
 
-class CONFLICT extends Error {
+class CONFLICT extends GraphQLError {
   constructor(message: string) {
     super(message);
     this.name = 'CONFLICT';
   }
 }
 
-class UNPROCESSABLE_ENTITY extends Error {
+class UNPROCESSABLE_ENTITY extends GraphQLError {
   constructor(message: string) {
     super(message);
     this.name = 'UNPROCESSABLE_ENTITY';
   }
 }
 
-class INVALID_CREDENTIALS extends Error {
+class INVALID_CREDENTIALS extends GraphQLError {
   constructor(message: string) {
     super(message);
     this.name = 'INVALID_CREDENTIALS';
@@ -65,9 +87,9 @@ export {
   UNAUTHENTICATED,
   UNAUTHORIZED,
   FORBIDDEN,
-  NOT_FOUND,
-  INTERNAL_SERVER_ERROR,
-  BAD_REQUEST,
+  NotFound,
+  ServerError,
+  BadRequest,
   CONFLICT,
   UNPROCESSABLE_ENTITY,
   INVALID_CREDENTIALS,
