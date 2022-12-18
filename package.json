@@ -1,7 +1,7 @@
 {
   "name": "@kazion/create-app",
   "description": "A cli tool to help you get started with graphql and rest api's with typescript",
-  "version": "1.0.4",
+  "version": "1.0.5",
   "main": "src/index.js",
   "license": "MIT",
   "scripts": {
