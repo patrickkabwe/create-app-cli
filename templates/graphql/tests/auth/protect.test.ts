@@ -22,17 +22,11 @@ afterEach(() => {
   vi.clearAllMocks();
 });
 
-vi.mock('~/middleware/protect', () => {
-  return {
-    protect: vi
-      .fn((next) => {
-        return (parent: any, args: any, context: typeof mockCtx, info: any) => {
-          return next(parent, args, context, info);
-        };
-      })
-      .mockReturnValue(() => {}),
-  };
-});
+// vi.mock('~/middleware/protect', () => {
+//   return {
+//     protect: vi.fn().mockImplementationOnce((fn: any) => fn),
+//   };
+// });
 
 describe('protect middleware', () => {
   const mockUserPayload = {
@@ -56,19 +50,18 @@ describe('protect middleware', () => {
   `;
 
   it('should throw error if no user in context', async () => {
+    mockCtx.prisma.user.findUnique.mockResolvedValue(null);
+
+    await UserService.getUserById(
+      mockCtx.prisma,
+      'dbcb692f-8259-42d9-b599-2356c9625bce',
+    );
+
+  
     const { query } = await testServer();
+    const { body } = await query(q, null, mockCtx);
 
-    const mockFn = () => {};
-    protect(mockFn)(null, null, mockCtx, null);
-    const { body } = await query<UserResponse>(q, null, {
-      ...mockCtx,
-    });
-
-    const results = body.singleResult;
-
-    console.log(results);
-
-    // expect(results.data.me).toBeNull();
+    expect(body.singleResult.errors[0].message).toBe('You are not authenticated');
   });
   it('should throw error if no cookie in authrization header or cookie', () => {});
   it('should call next function if cookie in authrization header or cookie', () => {});

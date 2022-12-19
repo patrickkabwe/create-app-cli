@@ -11,7 +11,7 @@ export const createToken = async (userId: string) => {
   const token = await new jose.SignJWT({ uid: userId })
     .setProtectedHeader({ alg: process.env.ALGO as string })
     .setIssuedAt()
-    .setExpirationTime('2h')
+    .setExpirationTime('7d')
     .sign(await genKey());
   return token;
 };

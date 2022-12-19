@@ -55,6 +55,10 @@ export const loginHandler: ResolverHandler<Promise<User>> = async (
       cleanedData.phoneNumber,
     );
 
+    if (!user) {
+      throw new UnAuthenticated(ERROR_MESSAGES.UNAUTHENTICATED);
+    }
+
     if (!(await comparePassword(args.input.password, user!.password))) {
       throw new UnAuthenticated(ERROR_MESSAGES.UNAUTHENTICATED);
     }
@@ -69,7 +73,11 @@ export const loginHandler: ResolverHandler<Promise<User>> = async (
       },
     );
 
-    // cxt.user = user;
+    cxt.res.cookie('token', token, {
+      httpOnly: true,
+      maxAge: 1000 * 60 * 60 * 24 * 7, // 7 days
+    });
+
     return { ...updatedUser };
   } catch (error: any) {
     if (error instanceof ZodError) {
@@ -83,10 +91,10 @@ export const loginHandler: ResolverHandler<Promise<User>> = async (
 export const verifyTokenHandler: ResolverHandler<Promise<User>> = async (
   __,
   _args,
-  { req, prisma },
+  { req, res, prisma },
 ) => {
   const authHeader = req?.cookies?.token;
-  const inputToken = _args.input.token;
+  const inputToken = _args?.input?.token;
 
   try {
     if (!inputToken && !authHeader) {
@@ -94,6 +102,11 @@ export const verifyTokenHandler: ResolverHandler<Promise<User>> = async (
     }
     const { uid } = await verifyToken(authHeader || inputToken);
     const user = await UserService.getUserById(prisma, uid);
+
+    res.cookie('token', authHeader || inputToken, {
+      httpOnly: true,
+      maxAge: 1000 * 60 * 60 * 24 * 7, // 7 days
+    });
     return user;
   } catch (error: any) {
     throw new UnAuthenticated(error.message);
@@ -107,21 +120,19 @@ export const logoutHandler: ResolverHandler<Promise<OK>> = async (
 ) => {
   try {
     const authHeader = ctx?.req?.cookies?.token;
-
-    if (authHeader) {
-      if (authHeader) {
-        const { uid } = decodeToken(authHeader);
-        const user = await UserService.getUserById(ctx.prisma, uid);
-        user.token = null;
-        await UserService.updateUserToken(ctx.prisma, user.id, user);
-      }
-      ctx.user = null;
-      return { ok: true };
-    } else {
+    if (!authHeader) {
       throw new UnAuthenticated(ERROR_MESSAGES.UNAUTHENTICATED);
     }
+    const { uid } = decodeToken(authHeader);
+    const user = await UserService.getUserById(ctx.prisma, uid);
+    user.token = null;
+    await UserService.updateUserToken(ctx.prisma, user.id, user);
+    ctx.res.clearCookie('token', {
+      httpOnly: true,
+      maxAge: 1000 * 60 * 60 * 24 * 7, // 7 days
+    });
+    return { ok: true };
   } catch (error) {
-    ctx.user = null;
     return { ok: false };
   }
 };

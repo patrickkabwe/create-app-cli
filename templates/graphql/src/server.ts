@@ -16,6 +16,8 @@ import { prisma } from '~/lib/db.server';
 import { WebSocketServer } from 'ws';
 import { useServer } from 'graphql-ws/lib/use/ws';
 import { logger } from '~/utils/logger';
+import { UnAuthenticated } from './errors';
+import { ERROR_MESSAGES } from './errors/errorMessages';
 
 interface MyContext {
   token?: String;
@@ -28,12 +30,12 @@ interface ExpressContext {
 
 const ctx = async ({ req, res }: ExpressContext) => {
   let user = null;
-
   try {
-    const authHeader = req.headers.authorization || '';
+    const authHeader =
+      req?.cookies?.token || req?.headers.authorization || undefined;
 
-    if (!authHeader.includes('Bearer')) {
-      throw new Error('Invalid token');
+    if (!authHeader) {
+      throw new UnAuthenticated(ERROR_MESSAGES.UNAUTHENTICATED);
     }
 
     const authToken = authHeader.replace('Bearer ', '');
@@ -82,6 +84,20 @@ async function startApolloServer() {
       },
     ],
     introspection: process.env.NODE_ENV !== 'production',
+    includeStacktraceInErrorResponses: process.env.NODE_ENV !== 'production',
+    logger,
+    nodeEnv: process.env.NODE_ENV,
+    formatError(formattedError, error: any) {
+      logger.error(error);
+      const newError = {
+        message: formattedError.message,
+        extensions: {
+          code: formattedError.extensions?.code,
+          status: error.extensions?.http?.status,
+        },
+      };
+      return newError;
+    },
   });
 
   await server.start();
