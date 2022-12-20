@@ -1,14 +1,12 @@
 import { expect, it, describe, beforeEach, afterEach, vi } from 'vitest';
-import { UserResponse } from '~/types';
-import { testServer } from '~/utils/testServer';
 import {
   MockContext,
   MockedContext,
   createMockContext,
 } from '~/utils/mockContext';
-import { UserService } from '~/modules/users/user.service';
 import { protect } from '~/middleware/protect';
-import { User } from '@prisma/client';
+import { UnAuthenticated } from '~/errors';
+import { ERROR_MESSAGES } from '~/errors/errorMessages';
 
 let mockCtx: MockContext;
 let ctx: MockedContext;
@@ -22,47 +20,55 @@ afterEach(() => {
   vi.clearAllMocks();
 });
 
-// vi.mock('~/middleware/protect', () => {
-//   return {
-//     protect: vi.fn().mockImplementationOnce((fn: any) => fn),
-//   };
-// });
+describe('protect', () => {
+  const resolverHandler = vi.fn();
+  const parent = {};
+  const args = {};
+  const info = {};
 
-describe('protect middleware', () => {
-  const mockUserPayload = {
-    id: 'dbcb692f-8259-42d9-b599-2356c9625bce',
-    name: 'test',
-    email: 'test@gmail.com',
-    phoneNumber: '0979609500',
-    password: 'test10',
-    avatar: 'test',
-  };
-
-  const q = `
-    GetMe{
-      me {
-        id
-        name
-        email
-        phoneNumber
-      }
-    }
-  `;
-
-  it('should throw error if no user in context', async () => {
-    mockCtx.prisma.user.findUnique.mockResolvedValue(null);
-
-    await UserService.getUserById(
-      mockCtx.prisma,
-      'dbcb692f-8259-42d9-b599-2356c9625bce',
-    );
-
-  
-    const { query } = await testServer();
-    const { body } = await query(q, null, mockCtx);
-
-    expect(body.singleResult.errors[0].message).toBe('You are not authenticated');
+  it('throws UnAuthenticated error if context.user is not present', () => {
+    const context = {};
+    expect(() =>
+      protect(resolverHandler)(parent, args, context, info),
+    ).toThrowError(new UnAuthenticated(ERROR_MESSAGES.UNAUTHENTICATED));
   });
-  it('should throw error if no cookie in authrization header or cookie', () => {});
-  it('should call next function if cookie in authrization header or cookie', () => {});
+
+  it('throws UnAuthenticated error if auth header is not present', () => {
+    const context = { user: {} };
+    expect(() =>
+      protect(resolverHandler)(parent, args, context, info),
+    ).toThrowError(new UnAuthenticated(ERROR_MESSAGES.UNAUTHENTICATED));
+  });
+
+  it('throws UnAuthenticated error if token is not present', () => {
+    const context = {
+      user: {},
+      req: {
+        headers: {
+          authorization: 'Bearer ',
+        },
+      },
+    };
+    const info = {};
+
+    expect(() =>
+      protect(resolverHandler)(parent, args, context, info),
+    ).toThrowError(new UnAuthenticated(ERROR_MESSAGES.UNAUTHENTICATED));
+  });
+
+  it('calls the next resolver handler if user is authenticated', () => {
+    const context = {
+      user: {},
+      req: {
+        headers: {
+          authorization: 'Bearer valid-token',
+        },
+      },
+    };
+    const info = {};
+
+    protect(resolverHandler)(parent, args, context, info);
+
+    expect(resolverHandler).toHaveBeenCalledWith(parent, args, context, info);
+  });
 });

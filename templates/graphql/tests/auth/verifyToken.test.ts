@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { expect, it, describe, beforeEach, afterEach, vi } from 'vitest';
 import { VerifyToken } from '~/types';
 import { testServer } from '~/utils/testServer';
@@ -21,7 +22,7 @@ afterEach(() => {
   vi.clearAllMocks();
 });
 
-describe('login', () => {
+describe('verifyToken', () => {
   const mockUserPayload = {
     id: 'dbcb692f-8259-42d9-b599-2356c9625bce',
     name: 'test',
@@ -30,7 +31,7 @@ describe('login', () => {
     password: 'test10',
     avatar: 'test',
     token:
-      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyLCJ1aWQiOiJkYmNiNjkyZi04MjU5LTQyZDktYjU5OS0yMzU2Yzk2MjViY2UifQ.OXvf4NWhmkb4h6fs66nbaKI_ef_VO1Cs7wbZuFGkY7k',
+      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxOTk2MjM5MDIyLCJ1aWQiOiJkYmNiNjkyZi04MjU5LTQyZDktYjU5OS0yMzU2Yzk2MjViY2UifQ.7AAs8FOgUUGkPlwD3wImkzwekUFU7vzfEahHYz8kjGk',
   };
 
   const q = `
@@ -57,12 +58,19 @@ describe('login', () => {
       {
         input: { token: newUser.token },
       },
-      { prisma: mockCtx.prisma },
+      {
+        ...mockCtx,
+        req: {
+          cookies: {},
+        },
+        res: {
+          cookie: vi.fn(),
+        },
+      },
     );
 
     const results = body.singleResult;
     expect(results.errors).toBeUndefined();
-    expect(results.data.verifyToken).toBeDefined();
     expect(results.data.verifyToken).toEqual({
       id: newUser.id,
       name: newUser.name,
@@ -86,7 +94,6 @@ describe('login', () => {
       },
       {
         ...mockCtx,
-        // @ts-ignore
         req: { ...mockCtx.req, cookies: { token: newUser.token } },
       },
     );

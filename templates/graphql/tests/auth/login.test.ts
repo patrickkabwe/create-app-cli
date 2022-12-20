@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { expect, it, describe, beforeEach, afterEach, vi } from 'vitest';
 import { LoginUserResponse } from '~/types';
 import { testServer } from '~/utils/testServer';
@@ -89,6 +90,27 @@ describe('login', () => {
     expect(results.errors[0].message).toBe('You are not authenticated');
   });
 
+  it('should fail if user not found', async () => {
+    mockCtx.prisma.user.findUnique.mockResolvedValue(null);
+
+    const { mutate } = await testServer();
+
+    const { body } = await mutate<LoginUserResponse>(
+      q,
+      {
+        input: {
+          phoneNumber: '0979609500',
+          password: 'test10',
+        },
+      },
+      { prisma: mockCtx.prisma },
+    );
+
+    const results = body.singleResult;
+
+    expect(results.errors).toBeDefined();
+  });
+
   it('should login user', async () => {
     mockCtx.prisma.user.update.mockResolvedValue({ ...newUser, token: 'test' });
     mockCtx.prisma.user.findUnique.mockResolvedValue(newUser);
@@ -100,6 +122,7 @@ describe('login', () => {
         token: 'test',
       },
     );
+
     const { mutate } = await testServer();
 
     const { body } = await mutate<LoginUserResponse>(
@@ -107,9 +130,15 @@ describe('login', () => {
       {
         input: { phoneNumber: newUser.phoneNumber, password: 'test10' },
       },
-      { prisma: mockCtx.prisma },
+      {
+        ...mockCtx,
+        res: {
+          cookie: vi.fn(),
+        },
+      },
     );
     const results = body.singleResult;
+
     expect(results.data.loginUser).toEqual({
       id: updatedUser.id,
       name: updatedUser.name,

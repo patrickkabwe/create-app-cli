@@ -89,14 +89,14 @@ async function startApolloServer() {
     nodeEnv: process.env.NODE_ENV,
     formatError(formattedError, error: any) {
       logger.error(error);
-      const newError = {
-        message: formattedError.message,
-        extensions: {
-          code: formattedError.extensions?.code,
-          status: error.extensions?.http?.status,
-        },
-      };
-      return newError;
+      // const newError = {
+      //   message: formattedError.message,
+      //   extensions: {
+      //     code: formattedError.extensions?.code,
+      //     status: error.extensions?.http?.status,
+      //   },
+      // };
+      return formattedError;
     },
   });
 

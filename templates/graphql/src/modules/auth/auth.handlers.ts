@@ -94,7 +94,7 @@ export const verifyTokenHandler: ResolverHandler<Promise<User>> = async (
   { req, res, prisma },
 ) => {
   const authHeader = req?.cookies?.token;
-  const inputToken = _args?.input?.token;
+  const inputToken = _args?.input?.token;  
 
   try {
     if (!inputToken && !authHeader) {
