@@ -20,6 +20,7 @@ export const protect: ResolverMiddleware = (next) => {
     if (!token) {
       throw new UnAuthenticated(ERROR_MESSAGES.UNAUTHENTICATED);
     }
+    //TODO:verify token
 
     return next(parent, args, context, info);
   };
