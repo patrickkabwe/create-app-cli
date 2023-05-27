@@ -6,7 +6,7 @@
   "license": "MIT",
   "scripts": {
     "start": "node src/index.js",
-    "push": "npm version patch && git push && git push --tags && npm publish",
+    "push": "npm version patch && git push && git push --tags",
     "git:push": "git add -A && git commit -m 'new release' && git push"
   },
   "bin": {
