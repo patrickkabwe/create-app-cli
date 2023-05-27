@@ -5,7 +5,6 @@
   "main": "src/index.js",
   "license": "MIT",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
     "start": "node src/index.js",
     "push": "npm version patch && git push && git push --tags && npm publish",
     "git:push": "git add -A && git commit -m 'new release' && git push"
