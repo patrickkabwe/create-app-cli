@@ -19,7 +19,8 @@
   "files": [
     "bin/",
     "src/",
-    "templates/"
+    "templates/",
+    "./create-app.png"
   ],
   "keywords": [
     "graphql",
