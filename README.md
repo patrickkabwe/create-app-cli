@@ -1,6 +1,8 @@
+![alt text](create-app.png "Create App")
+
 # Create App Cli
 
-A cli tool to help you get started with graphql and rest api's with typescript
+A nodejs cli tool that help generate Rest, Graphql, etc. backend application
 
 ## Contribute
 

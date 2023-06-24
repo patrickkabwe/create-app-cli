@@ -1,35 +1,56 @@
 const arg = require("arg");
 const inquirer = require("inquirer");
 const { createProject } = require("./main.js");
+const { usage } = require("./usage.js");
+
+// console.log(usage);
 
 function parseArgumentsIntoOptions(rawArgs) {
   const args = arg(
     {
-      "--yes": Boolean,
+      "--help": Boolean,
+      "--git": Boolean,
       "--install": Boolean,
+      "--template": String,
+      "--package-manager": String,
+
+      "-h": "--help",
       "-g": "--git",
-      "-y": "--yes",
       "-i": "--install",
+      "-t": "--template",
+      "-p": "--package-manager",
     },
     {
       argv: rawArgs.slice(2),
     }
   );
+
   return {
-    skipPrompts: args["--yes"] || false,
-    template: args._[0],
+    help: args["--help"] || false,
+    template: args["--template"],
     runInstall: args["--install"] || false,
+    packageManager: args["--package-manager"],
   };
 }
 
 async function promptForMissingOptions(options) {
-  if (options.skipPrompts) {
-    return {
-      ...options,
-    };
+  const questions = [];
+  const templateChoices = ["graphql", "rest"];
+  const packageManagerChoices = ["npm", "yarn", "pnpm"];
+  if (options.template && !templateChoices.includes(options.template)) {
+    throw new Error("Invalid template choice");
+  }
+  if (
+    options.packageManager &&
+    !packageManagerChoices.includes(options.packageManager)
+  ) {
+    throw new Error("Invalid package manager choice");
   }
 
-  const questions = [];
+  if (options.help) {
+    console.log(usage);
+    process.exit(0);
+  }
   questions.push({
     type: "text",
     name: "projectName",
@@ -50,13 +71,44 @@ async function promptForMissingOptions(options) {
     default: "GraphQL API",
   });
 
-  questions.push({
-    type: "text",
-    name: "template",
-    message: "Please enter a template for the project:",
-    choice: ["Graphql", "Rest"],
-    default: "graphql",
-  });
+  if (!options.template) {
+    questions.push({
+      type: "list",
+      name: "template",
+      message: "Please enter a template for the project:",
+      choices: templateChoices,
+      transformer: function (value) {
+        return value.toLowerCase();
+      },
+      validate: function (value) {
+        const valid = templateChoices.includes(value);
+        if (valid) {
+          return true;
+        }
+        return "Please enter a template for the project.";
+      },
+    });
+  }
+
+  if (!options.packageManager) {
+    questions.push({
+      type: "list",
+      name: "packageManager",
+      message: "Please select a package manager:",
+      choices: packageManagerChoices,
+      default: "pnpm",
+      transformer: function (value) {
+        return value.toLowerCase();
+      },
+      validate: function (value) {
+        const valid = packageManagerChoices.includes(value);
+        if (valid) {
+          return true;
+        }
+        return "Please select a package manager.";
+      },
+    });
+  }
 
   questions.push({
     type: "text",
@@ -69,7 +121,8 @@ async function promptForMissingOptions(options) {
   const answers = await inquirer.prompt(questions);
   return {
     ...options,
-    template: "graphql",
+    template: options.template || answers.template,
+    packageManager: options.packageManager || answers.packageManager,
     projectName: options.projectName || answers.projectName,
     runInstall:
       options.runInstall || answers.installDependencies === "y" ? true : false,
