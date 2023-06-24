@@ -3,8 +3,6 @@ const inquirer = require("inquirer");
 const { createProject } = require("./main.js");
 const { usage } = require("./usage.js");
 
-// console.log(usage);
-
 function parseArgumentsIntoOptions(rawArgs) {
   const args = arg(
     {

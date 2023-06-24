@@ -63,7 +63,7 @@ async function createProject(options) {
       task: () =>
         projectInstall({
           cwd: `${options.targetDirectory}/${options.projectName}`,
-          prefer: "yarn",
+          prefer: options.packageManager || "pnpm",
         }),
       skip: () =>
         !options.runInstall
