@@ -1,0 +1,14 @@
+import * as handlers from '~/modules/{{lowerCase moduleName}}/{{lowerCase moduleName}}.handlers';
+import { protect } from '~/middleware/protect';
+
+export const {{lowerCase moduleName}}Resolvers = {
+  Query: {
+    get{{ titleCase moduleName }}: protect(handlers.get{{ titleCase moduleName }}Handler),
+    get{{ pluralize (titleCase moduleName) }}: protect(handlers.get{{ titleCase moduleName }}sHandler),
+  },
+  Mutation: {
+    create{{ titleCase moduleName }}: protect(handlers.create{{ titleCase moduleName }}Handler),
+    update{{ titleCase moduleName }}: protect(handlers.update{{ titleCase moduleName }}Handler),
+    delete{{ titleCase moduleName }}: protect(handlers.delete{{ titleCase moduleName }}Handler),
+  },
+};

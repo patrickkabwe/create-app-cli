@@ -1,0 +1,38 @@
+{
+    "$schema": "https://json.schemastore.org/tsconfig",
+    "display": "Node 18",
+
+    "_version": "18.2.0",
+
+    "compilerOptions": {
+        "outDir": "dist",
+        "lib": ["es2023"],
+        "module": "node16",
+        "target": "es2022",
+
+        "strict": true,
+        "strictNullChecks": true,
+        "strictFunctionTypes": true,
+        "noImplicitAny": true,
+
+        "esModuleInterop": true,
+        "skipLibCheck": true,
+        "noImplicitThis": true,
+        "noUnusedLocals": true,
+        "removeComments": true,
+        "noUnusedParameters": false,
+        "noImplicitReturns": true,
+        "noFallthroughCasesInSwitch": true,
+        "allowSyntheticDefaultImports": true,
+        "emitDecoratorMetadata": true,
+        "experimentalDecorators": true,
+        "forceConsistentCasingInFileNames": true,
+        "moduleResolution": "node16",
+        "baseUrl": "src",
+        "paths": {
+            "~/*": ["*"]
+        }
+    },
+    "include": ["src/**/*"],
+    "exclude": ["node_modules", "dist", "test"]
+}

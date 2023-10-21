@@ -1,0 +1,54 @@
+import { PrismaClient, {{ titleCase moduleName }} } from '@prisma/client';
+
+export class {{ titleCase moduleName }}Service {
+  static async create{{ titleCase moduleName }}(
+    prisma: PrismaClient,
+    data: Partial<{{ titleCase moduleName }}>,
+  ){
+    const {{ lowerCase moduleName }} = await prisma.{{ lowerCase moduleName }}.create({
+      data,
+    });
+    return {{ lowerCase moduleName }};
+  }
+
+  static async get{{ titleCase moduleName }}ById(prisma: PrismaClient, id: string){
+    const {{ lowerCase moduleName }} = await prisma.{{ lowerCase moduleName }}.findUnique({
+      where: {
+        id,
+      },
+    });
+    return {{ lowerCase moduleName }}
+  }
+
+  static async get{{ pluralize (titleCase moduleName) }}(prisma: PrismaClient, userId: string) {
+    const {{pluralize (lowerCase moduleName) }} = await prisma.{{ lowerCase moduleName }}.findMany({
+      where: {
+        userId
+      },
+    });
+    return {{pluralize (lowerCase moduleName) }}
+  }
+
+  static async update{{ titleCase moduleName }}(
+    prisma: PrismaClient,
+    id: string,
+    data: Partial<{{ titleCase moduleName }}>,
+  ) {
+    const updated{{ lowerCase moduleName }} = await prisma.{{ lowerCase moduleName }}.update({
+      where: {
+        id,
+      },
+      data
+    });
+    return updated{{ lowerCase moduleName }};
+  }
+
+  static async delete{{ titleCase moduleName }}(prisma: PrismaClient, id: string) {
+    const deleted{{ lowerCase moduleName }} = await prisma.{{ lowerCase moduleName }}.delete({
+      where: {
+        id,
+      },
+    });
+    return deleted{{ lowerCase moduleName }};
+  }
+}

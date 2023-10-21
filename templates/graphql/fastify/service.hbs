@@ -1,0 +1,6 @@
+import { PrismaClient, {{ titleCase moduleName }}, Prisma } from '@prisma/client';
+
+export async function create{{ titleCase moduleName }}( prisma: PrismaClient, data:Prisma.{{ titleCase moduleName }}CreateInput) {
+  const {{ camelCase moduleName }} = await prisma.{{ lowerCase moduleName }}.create({ data});
+  return {{ camelCase moduleName }};
+}
