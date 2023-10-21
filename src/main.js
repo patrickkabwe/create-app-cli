@@ -41,7 +41,8 @@ async function createProject(options) {
   const templateDir = path.resolve(
     new URL(currentFileUrl).pathname,
     "../../templates",
-    options.template.toLowerCase()
+    options.template.toLowerCase(),
+    options.framework.toLowerCase()
   );
 
   options.templateDirectory = templateDir;

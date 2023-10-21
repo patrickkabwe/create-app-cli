@@ -34,6 +34,7 @@ function parseArgumentsIntoOptions(rawArgs) {
 async function promptForMissingOptions(options) {
   const questions = [];
   const templateChoices = ["graphql", "rest"];
+  const frameworkChoices = ["express", "fastify"];
   const packageManagerChoices = ["npm", "yarn", "pnpm"];
   if (options.template && !templateChoices.includes(options.template)) {
     throw new Error("Invalid template choice");
@@ -73,7 +74,7 @@ async function promptForMissingOptions(options) {
     questions.push({
       type: "list",
       name: "template",
-      message: "Please enter a template for the project:",
+      message: "Please choose a template for the project:",
       choices: templateChoices,
       transformer: function (value) {
         return value.toLowerCase();
@@ -84,6 +85,23 @@ async function promptForMissingOptions(options) {
           return true;
         }
         return "Please enter a template for the project.";
+      },
+    });
+    questions.push({
+      type: "list",
+      name: "framework",
+      message: "Please choose a framework for the project:",
+      choices: frameworkChoices,
+      default: "express",
+      transformer: function (value) {
+        return value.toLowerCase();
+      },
+      validate: function (value) {
+        const valid = frameworkChoices.includes(value);
+        if (valid) {
+          return true;
+        }
+        return "Please choose a framework for the project.";
       },
     });
   }
