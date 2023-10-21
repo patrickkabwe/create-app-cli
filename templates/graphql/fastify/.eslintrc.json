@@ -8,7 +8,13 @@
     "ecmaVersion": "latest",
     "sourceType": "module"
   },
+  "overrides": [
+    {
+      "files": ["*.ts"]
+    }
+  ],
   "rules": {
+    "no-var": "off",
     "@typescript-eslint/semi": "off",
     "@typescript-eslint/comma-dangle": "off",
     "@typescript-eslint/explicit-function-return-type": "off",

@@ -87,24 +87,25 @@ async function promptForMissingOptions(options) {
         return "Please enter a template for the project.";
       },
     });
-    questions.push({
-      type: "list",
-      name: "framework",
-      message: "Please choose a framework for the project:",
-      choices: frameworkChoices,
-      default: "express",
-      transformer: function (value) {
-        return value.toLowerCase();
-      },
-      validate: function (value) {
-        const valid = frameworkChoices.includes(value);
-        if (valid) {
-          return true;
-        }
-        return "Please choose a framework for the project.";
-      },
-    });
   }
+
+  questions.push({
+    type: "list",
+    name: "framework",
+    message: "Please choose a framework for the project:",
+    choices: frameworkChoices,
+    default: "express",
+    transformer: function (value) {
+      return value.toLowerCase();
+    },
+    validate: function (value) {
+      const valid = frameworkChoices.includes(value);
+      if (valid) {
+        return true;
+      }
+      return "Please choose a framework for the project.";
+    },
+  });
 
   if (!options.packageManager) {
     questions.push({
@@ -131,6 +132,7 @@ async function promptForMissingOptions(options) {
     name: "installDependencies",
     message: "Install dependencies?",
     choice: ["y", "n"],
+    placeholder: "y",
     default: "y",
   });
 
@@ -140,6 +142,7 @@ async function promptForMissingOptions(options) {
     template: options.template || answers.template,
     packageManager: options.packageManager || answers.packageManager,
     projectName: options.projectName || answers.projectName,
+    framework: answers.framework,
     runInstall:
       options.runInstall || answers.installDependencies === "y" ? true : false,
   };

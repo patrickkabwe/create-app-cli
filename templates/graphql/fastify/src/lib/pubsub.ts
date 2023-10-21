@@ -1,2 +1,2 @@
-import { RedisPubSub } from 'graphql-redis-subscriptions';
-export const pubsub = new RedisPubSub();
+import { RedisPubSub } from 'graphql-redis-subscriptions'
+export const pubsub = new RedisPubSub()

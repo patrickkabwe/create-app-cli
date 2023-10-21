@@ -1,10 +1,13 @@
 import cookie from '@fastify/cookie'
-import { apolloServer, app, fastifyApollo } from './app'
-import { queueBoardPath, serverAdapter } from './lib/queueBoard'
+import { gracefulShutdown, logger } from '@kazion/node-utils'
+import { config } from 'dotenv'
+import { apolloServer, app, fastifyApollo } from '~/app'
+import { prisma } from '~/lib/prisma'
+import { queueBoardPath, serverAdapter } from '~/lib/queueBoard'
 import { worker } from './lib/worker'
-import { logger } from './utils/logger'
+config()
 
-const port = 4200
+const port = Number.parseInt(process.env.PORT as string) ?? 4000
 
 const startServer = async () => {
   await apolloServer.start()
@@ -30,53 +33,34 @@ const startServer = async () => {
 
 const signalTraps: NodeJS.Signals[] = ['SIGTERM', 'SIGINT', 'SIGUSR2']
 
-signalTraps.forEach((type) => {
-  process.once(type, () => {
-    shutdown(type).catch((err) => {
-      logger.error(err)
-      process.exit(1)
-    })
-  })
+gracefulShutdown(signalTraps, {
+  development: process.env.NODE_ENV === 'development',
+  services: [
+    {
+      name: 'worker',
+      stop: async () => {
+        await worker.close()
+      },
+    },
+    {
+      name: 'database',
+      stop: async () => {
+        await prisma.$disconnect()
+      },
+    },
+    {
+      name: 'server',
+      stop: async () => {
+        // logger.info('🛑 Server is closing')
+        await app.close()
+      },
+    },
+  ],
 })
-
-process.on('uncaughtException', (err) => {
-  // TODO: send email to admin
-  logger.error(err)
-  shutdown('uncaughtException').catch((err) => {
-    logger.error(err)
-    process.exit(1)
-  })
-})
-
-process.on('unhandledRejection', (err) => {
-  // TODO: send email to admin
-  logger.error(err)
-  shutdown('unhandledRejection').catch((err) => {
-    logger.error(err)
-    process.exit(1)
-  })
-})
-
-async function shutdown(signal: string) {
-  try {
-    logger.info('🛑 Server is shutting down')
-    // await prisma.$disconnect();
-    logger.info('🛑 Prisma disconnected')
-    await worker.close()
-    logger.info('🛑 Worker closed')
-    process.kill(process.pid, signal)
-  } catch (e) {
-    logger.error(e)
-    process.exit(1)
-  }
-}
 
 startServer()
   .then(() => {
-    console.log(`🚀 Server ready at http://localhost:${port}/graphql`)
-    console.log(
-      `🚀 Subscriptions ready at ws://localhost:${port}/subscriptions`,
-    )
+    logger.info(`🚀 Server ready at http://localhost:${port}/graphql`)
   })
   .catch((err) => {
     logger.error(err)

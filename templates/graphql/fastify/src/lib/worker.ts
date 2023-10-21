@@ -1,7 +1,7 @@
 import { Worker } from 'bullmq'
 import { REDIS_CONNECTION } from './redis'
 import { QueueEvent } from '../constants/queue.events'
-import { logger } from '../utils/logger'
+import { logger } from '@kazion/node-utils'
 
 export const worker = new Worker(QueueEvent.NOTIFICATION_QUEUE_NAME, async (job) => {
   return {
